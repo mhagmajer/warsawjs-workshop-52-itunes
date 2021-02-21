@@ -1,31 +1,82 @@
 import {
     Button,
+    CircularProgress,
     Image,
     Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
     Stack,
     Table,
     TableCaption,
+    Tag,
     Tbody,
     Td,
     Th,
     Thead,
     Tr,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
     useDisclosure,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from '../hooks';
 
 // https://itunes.apple.com/search?term=harry&entity=ebook
+
+async function fetchBooks({ searchTermInput, setResults, setIsLoading }) {
+    if (searchTermInput === '') {
+        return;
+    }
+
+    setIsLoading(true);
+    try {
+        const response = await fetch(
+            `https://itunes.apple.com/search?term=${encodeURIComponent(
+                searchTermInput
+            )}&entity=ebook`
+        );
+        const data = await response.json();
+
+        setResults(data.results);
+    } finally {
+        setIsLoading(false);
+    }
+}
+
+const words = ['paris', 'barcelona', 'berlin', 'tokyo', 'rome'];
+
+// returns list of suggested queries
+function getSuggestions(searchTerm) {
+    if (!searchTerm) {
+        return [];
+    }
+    return words.filter((word) => word.startsWith(searchTerm));
+}
 
 export function Itunes() {
     const [results, setResults] = useState([]);
     const [searchTermInput, setSearchTermInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+
+    // auto loading of the data
+    const debouncedSearchTerm = useDebounce(searchTermInput, 500);
+
+    useEffect(() => {
+        fetchBooks({
+            searchTermInput: debouncedSearchTerm,
+            setResults,
+            setIsLoading,
+        });
+    }, [debouncedSearchTerm]);
+
+    const suggestionsForInput = getSuggestions(searchTermInput);
+    useEffect(() => {
+        setSuggestions(suggestionsForInput);
+    }, [suggestionsForInput.join('')]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Stack>
@@ -34,23 +85,30 @@ export function Itunes() {
                     value={searchTermInput}
                     onChange={(event) => setSearchTermInput(event.target.value)}
                 />
+                {isLoading && (
+                    <CircularProgress
+                        isIndeterminate
+                        color="green.300"
+                        size={10}
+                    />
+                )}
                 <Button
                     colorScheme="blue"
-                    onClick={() => {
-                        (async () => {
-                            const response = await fetch(
-                                `https://itunes.apple.com/search?term=${encodeURIComponent(
-                                    searchTermInput
-                                )}&entity=ebook`
-                            );
-                            const data = await response.json();
-
-                            setResults(data.results);
-                        })();
-                    }}
+                    onClick={() =>
+                        fetchBooks({
+                            searchTermInput,
+                            setResults,
+                            setIsLoading,
+                        })
+                    }
                 >
                     Search
                 </Button>
+            </Stack>
+            <Stack direction="row">
+                {suggestions.map((suggestion) => (
+                    <Tag key={suggestion}>{suggestion}</Tag>
+                ))}
             </Stack>
             <ItunesTable results={results} />
         </Stack>
@@ -71,7 +129,7 @@ function ItunesTable({ results }) {
             </Thead>
             <Tbody>
                 {results.map((result) => (
-                    <Tr>
+                    <Tr key={result.trackId}>
                         <Td>
                             <Image src={result.artworkUrl60} />
                         </Td>
