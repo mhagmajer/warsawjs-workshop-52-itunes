@@ -10,6 +10,14 @@ import {
     Th,
     Thead,
     Tr,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    useDisclosure,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
@@ -58,6 +66,7 @@ function ItunesTable({ results }) {
                     <Th>Artwork</Th>
                     <Th>Name</Th>
                     <Th isNumeric>Price</Th>
+                    <Th></Th>
                 </Tr>
             </Thead>
             <Tbody>
@@ -68,9 +77,39 @@ function ItunesTable({ results }) {
                         </Td>
                         <Td>{result.trackName}</Td>
                         <Td isNumeric>{result.price}</Td>
+                        <Td>
+                            <DescriptionModal result={result} />
+                        </Td>
                     </Tr>
                 ))}
             </Tbody>
         </Table>
+    );
+}
+
+function DescriptionModal({ result }) {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    return (
+        <>
+            <Button onClick={onOpen} colorScheme="blue">
+                Open Modal
+            </Button>
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Modal Title</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody
+                        dangerouslySetInnerHTML={{ __html: result.description }}
+                    />
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={onClose}>
+                            Close
+                        </Button>
+                        <Button variant="ghost">Secondary Action</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </>
     );
 }
