@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import styles from './App.module.css';
 import { Counter } from './counter';
+import { Itunes } from './itunes/Itunes';
 
 function LearnReactBanner({ topic }) {
     return (
@@ -19,7 +20,7 @@ function App() {
     return (
         <div className={styles['App']}>
             <header className={styles['App-header']}>
-                <Counter />
+                <Itunes />
             </header>
         </div>
     );
