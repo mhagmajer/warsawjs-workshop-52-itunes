@@ -1,20 +1,17 @@
 import {
     Button,
+    Image,
     Input,
     Stack,
     Table,
-    Thead,
-    Tbody,
-    Image,
-    Tfoot,
-    Tr,
-    Th,
-    Td,
     TableCaption,
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
 } from '@chakra-ui/react';
-
-import { useEffect } from 'react';
-import { useState } from 'react/cjs/react.development';
+import { useState } from 'react';
 
 // https://itunes.apple.com/search?term=harry&entity=ebook
 
